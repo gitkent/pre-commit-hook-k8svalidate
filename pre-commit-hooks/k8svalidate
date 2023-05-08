@@ -13,6 +13,7 @@ import jsonschema
 import kubernetes_validate.utils as utils
 from ruamel.yaml import YAML
 
+from kubernetes_validate import validate_labels
 
 def unskipped(i_files, exclude):
     """Take a list of input files, and a list of globs to exclude, subtract.
@@ -101,6 +102,16 @@ def main():
                             result = f"FAIL [{e.args[0]}]"
                             valid = False
                             operation = "*FAIL"
+                        try:
+                            validate_labels(doc)
+                            operation = " PASS"
+                        except AssertionError as e:
+                            result = f"FAIL [{e.args[0]}]"
+                            valid = False
+                            operation = "*FAIL"
+                        except(KeyError, TypeError):
+                            result = "Skipped [No metadata.labels found]"
+                            operation = " SKIP"
                     else:
                         result = "Skipped [Not Kubernetes YAML]"
                         operation = " SKIP"
