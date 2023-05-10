@@ -3,12 +3,6 @@
 import re
 import yaml
 
-class ValidationError():
-    def __init__(self, caught: Exception, version: str):
-        self.version = version
-        for attr, value in caught.__dict__.items():
-            self.__dict__[attr] = value
-
 def validate_labels(file):
   try:
     f = open(file)

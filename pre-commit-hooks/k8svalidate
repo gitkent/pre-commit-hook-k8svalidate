@@ -9,11 +9,12 @@ import glob
 import itertools
 import sys
 
+import re
+import yaml
+
 import jsonschema
 import kubernetes_validate.utils as utils
 from ruamel.yaml import YAML
-
-from kubernetes_validate import validate_labels
 
 def unskipped(i_files, exclude):
     """Take a list of input files, and a list of globs to exclude, subtract.
@@ -123,6 +124,18 @@ def main():
 
     return overall_result
 
+def validate_labels(file):
+  try:
+    f = open(file)
+    yamls = yaml.load_all(f, yaml.FullLoader)
+    for y in yamls:
+      for k,v in y['metadata']['labels'].items():
+        regex = r"(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?"
+        label_regex = re.compile(regex)
+        assert re.fullmatch(label_regex, v), ('%s contains invalid label value in %s: %s validation regex is %s' % (file, k, v, regex))
+
+  except (KeyError, TypeError):
+   pass
 
 if __name__ == "__main__":
     rc = main()
